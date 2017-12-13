@@ -150,7 +150,7 @@
                 <!-- Tooltip -->
                 <div id="tooltip" class="hidden">
                     <strong id="title">Loading...</strong><br>
-                    <strong id="regionid">Loading...</strong>
+                    <strong id="regionid">Loading...</strong><br>
                     <span id="value"></span>
                 </div>
             </div>
@@ -186,7 +186,6 @@
             // change the analysis unit on click and change the visibility
             // of the varibles available for each analysis unit
             $("input[name='a_unit_radio']").click(function() {
-                console.log(this.value);
                 selected_au = this.value;
                 if(selected_au == "employment_regions"){
                     $(".notjobs").each(function() {
@@ -252,7 +251,6 @@
             // init on load
             // A $( document ).ready() block.
             $( document ).ready(function() {
-                console.log( "ready!" );
                 updateMap(selected_au, selected_var, selected_year)
             });
 
@@ -275,6 +273,8 @@
                 var property = selected_property + '_' + selected_year;
 
                 console.log("Analysis unit: " + analysis_unit + " Property: "+ property);
+
+
 
                 //spinner start and options
                 var target = document.getElementById('map');
@@ -303,6 +303,10 @@
 
                 //Load GeoJSON
                 d3.json(analysis_unit + ".geojson", function (json) {
+                    // TODO check if the property exists
+                    if(property in json.features[0].properties){
+
+
                     //stop loading spinner
                     spinner.stop();
 
@@ -359,7 +363,11 @@
                                 var tmp_info = "";
                                 var all_yrs = ["base", "2014", "2015", "2016"];
                                 for(var i=0;i<all_yrs.length;i++){
+                                    if(d.properties[selected_property + '_' + all_yrs[i]] != null){
                                     tmp_info += "<br/><b>" + all_yrs[i].toUpperCase()+": " + "</b>" + numberWithCommas(Math.round(d.properties[selected_property + '_' + all_yrs[i]]));
+                                }else{
+                                    tmp_info += "<br/><b>" + all_yrs[i].toUpperCase()+": " + "</b>" + "NA";
+                                };
                                 };
 
                                 var info = tmp_info;
@@ -433,60 +441,50 @@
 
                     function updateScale(){
                         var sort_ar = [];
-                        var min = json.features[0].properties[property],
-                            max = json.features[0].properties[property];
-
                         var all_yrs = ["base", "2014", "2015", "2016"];
                         for(var i=0;i<all_yrs.length;i++){
 
                             var loop_prop = selected_property + '_' + all_yrs[i];
-
-                            for (var i = 0; i < json.features.length; i++) {
-                                if (json.features[i].properties[loop_prop] < min) {
-                                    min = json.features[i].properties[loop_prop];
-                                }//find min
-                                if (json.features[i].properties[loop_prop] > max) {
-                                    max = json.features[i].properties[loop_prop];
-                                }//find max
-
-                                if(json.features[i].properties[loop_prop] != 0 && json.features[i].properties[loop_prop] != null) {
-                                    sort_ar.push(json.features[i].properties[loop_prop]); //push to sorting ar
-                                }
-                            }//loop through json features
+                            for(var j=0; j<json.features.length;j++){
+                                sort_ar.push(json.features[j].properties[loop_prop]); //push to sorting ar
+                            }
 
                         }//search across all years
 
-                        var t1 = null, t2 = null, t3 = null, t4 = null;
+                        sort_ar = sort_ar.sort() // sort the values
+                        sort_ar = sort_ar.filter(function(n){ return n != undefined }); // remove any undefined values from array
 
-                        //sort values of property for all regions
-                        sort_ar.sort(function(x,y){return x - y});
-                        for (var i = Math.round(sort_ar.length/num_colors); i < sort_ar.length; i+=Math.round(sort_ar.length/(num_colors))) {
-                            if(t1 == null){
-                                t1 = sort_ar[i];
-                            }
-                            else if(t2 == null){
-                                t2 = sort_ar[i];
-                            }
-                            else if(t3 == null){
-                                t3 = sort_ar[i];
-                            }
-                            else if(t4 == null){
-                                t4 = sort_ar[i];
-                            }
+                        var min = Math.min.apply(Math, sort_ar);// turn strings into numbers and find min value in array
+                        var max = Math.max.apply(Math, sort_ar);// turn strings into numbers and find max value in array
 
+                        console.log("sort length:"+sort_ar.length);
+                        console.log("colors:"+num_colors);
+                        console.log("break:"+Math.round(sort_ar.length/num_colors-1));
+                        // create equal interval breaks
+                        var range = max-min;
+                        var step = range/num_colors;
+
+
+                        // create the breaks
+                        var cat_breaks = [];
+
+
+                        for (var i = 1; i < num_colors;i++) {
+                            var uplim = min+step*i;
+                            cat_breaks.push(uplim);
+                        }
+
+                        /*
+                        for (var i = Math.round(sort_ar.length/num_colors-1); i < sort_ar.length; i+=Math.round(sort_ar.length/(num_colors-1))) {
+                            cat_breaks.push(sort_ar[i]);
                         }//find thresholds for each bucket
+                        */
 
-
+                        console.log(cat_breaks);
                         color = d3.scale.threshold()
-                                .domain([t1, t2, t3, t4])
+                                .domain(cat_breaks)
                                 .range([ color1, color2, color3, color4, color5]);
-                        t1 = Math.round(100*t1)/100;
-                        t2 = Math.round(100*t2)/100;
-                        t3 = Math.round(100*t3)/100;
-                        t4 = Math.round(100*t4)/100;
-
-                        var t_ar = [t1, t2, t3, t4];
-                        updateLegend(min, max, t_ar, selected_property);
+                        updateLegend(min, max, cat_breaks, selected_property);
 
                     }//make scale
 
@@ -495,116 +493,75 @@
                         for(var i = 1; i <= num_colors; i++) {
                             var calc;
                             var str = "";
-
-                            if(selected_property == "applied_water_per_acre" || selected_property == "evapotranspiration_of_applied_water_per_acre"){
-                                //calculate first half of interval (LEFT)
-                                if (i == 1) {
-                                    calc = min;
-                                }//if first section of threshold
-                                else {
-                                    calc = t_ar[i - 2];
-                                }//get threshold
-
-                                calc = Math.round(calc*100)/100;
-
-                                str += calc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); //add commas every thousandths
-
-                                str += "-"; //to
-
-                                //calculate second half of scale (RIGHT)
-                                if (i < num_colors) {
-                                    if ((i == 1) && (Math.round(min*100)/100 != Math.round(t_ar[i - 1]*100)/100)) {
-                                        calc = t_ar[i - 1] - 0.01;
-                                    }//for first index, check left != right
-                                    else if ((i > 1) && (Math.round(t_ar[i - 2]*100)/100 != Math.round(t_ar[i - 1]*100)/100)) {
-                                        calc = t_ar[i - 1] - 0.01;
-                                    }//for rest if left side does not equal right
-                                    else {
-                                        calc = t_ar[i - 1];
-                                    }//else leave it
-                                }//not last legend value
-                                else {
-                                    calc = max;
-                                }//last legend value
-
-                                calc = Math.round(calc*100)/100;
-
-                                str += calc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-                                document.getElementById("legendval" + [i]).innerHTML = [str]; //update html
-                            }// do -0.01 intervaling
+                            //calculate first half of interval (LEFT)
+                            if (i == 1) {
+                                calc = min;
+                            }//if first section of threshold
                             else {
-                                if (selected_property == "revenue_per_acre" || selected_property == "revenue_per_applied_water") {
-                                    str += '$';
-                                }//append dollar sign for revenue
-                                //calculate first half of interval (LEFT)
-                                if (i == 1) {
-                                    calc = min;
-                                }//if first section of threshold
-                                else {
-                                    calc = t_ar[i - 2];
-                                }//get threshold
-                                if (selected_property == "total_revenue") {
-                                    calc = Math.round(calc / 1000000);
-                                }//if total revenue, turn to millions of dollars
-                                else {
-                                    calc = Math.round(calc);
-                                }//just round
-                                str += calc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); //add commas every thousandths
+                                calc = t_ar[i - 2];
+                            }//get threshold
 
-                                str += "-"; //to
+                            calc = Math.round(calc*100)/100;
 
-                                if (selected_property == "revenue_per_acre" || selected_property == "revenue_per_applied_water") {
-                                    str += '$';
-                                }//dollar sign
-                                //calculate second half of scale (RIGHT)
-                                if (i < num_colors) {
-                                    if ((i == 1) && (Math.round(min) != Math.round(t_ar[i - 1]))) {
-                                        calc = t_ar[i - 1] - 1;
-                                    }//for first index, check left != right
-                                    else if ((i > 1) && (Math.round(t_ar[i - 2]) != Math.round(t_ar[i - 1]))) {
-                                        calc = t_ar[i - 1] - 1;
-                                    }//for rest if left side does not equal right
-                                    else {
-                                        calc = t_ar[i - 1];
-                                    }//else leave it
-                                }//not last legend value
-                                else {
-                                    calc = max;
-                                }//last legend value
-                                if (selected_property == "total_revenue") {
-                                    calc = Math.round(calc / 1000000);
-                                }//turn to millions of dollars
-                                else {
-                                    calc = Math.round(calc);
-                                }//just round
-                                str += calc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                            str += calc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); //add commas every thousandths
 
-                                document.getElementById("legendval" + [i]).innerHTML = [str]; //update html
-                            }//do normal -1 intervaling
+                            str += "  -  "; //to
+
+                            //calculate second half of scale (RIGHT)
+                            if (i < num_colors) {
+                                if ((i == 1) && (Math.round(min*100)/100 != Math.round(t_ar[i - 1]*100)/100)) {
+                                    calc = t_ar[i - 1] - 0.01;
+                                }//for first index, check left != right
+                                else if ((i > 1) && (Math.round(t_ar[i - 2]*100)/100 != Math.round(t_ar[i - 1]*100)/100)) {
+                                    calc = t_ar[i - 1] - 0.01;
+                                }//for rest if left side does not equal right
+                                else {
+                                    calc = t_ar[i - 1];
+                                }//else leave it
+                            }//not last legend value
+                            else {
+                                calc = max;
+                            }//last legend value
+
+                            calc = Math.round(calc*100)/100;
+
+                            str += calc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                            document.getElementById("legendval" + [i]).innerHTML = [str]; //update html
+
 
                         }//update intervals
 
-                        //update units
-                        var units;
+                        //update selected_units
+                        var selected_units;
                         switch(selected_property){
                             case "irrig":
-                                units = "Acres";
+                                selected_units = "Thousand Acres";
                                 break;
                             case "app":
-                                units = "Acre-feet";
+                                selected_units = "Thousand Acre-feet";
                                 break;
                             case "grev":
-                                units = "Gross revenue"
+                                selected_units = "Millions of Dollars"
+                                break;
+                            case "jobs":
+                                selected_units = "Change in Jobs"
                                 break;
                             default:
-                                units = "Units"
+                                selected_units = "Units"
                         }
-                        document.getElementById("units").innerHTML = '*' + units;
+
+                        document.getElementById("units").innerHTML = selected_units;
 
                     }//updateLegend()
 
-                }); //load analysis unit
+                }else{console.log("Error: Analysis unit does not have data for that variable and/or year. User supplied Analysis Unit:"+ analysis_unit+" Variable: "+selected_property+" Year: "+ selected_year);
+                //stop loading spinner
+                spinner.stop();
+                }
+                }
+            ); //load analysis unit
+
 
             }//updateMap()
 
