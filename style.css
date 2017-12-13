@@ -26,16 +26,23 @@
     padding-bottom:15px;
 }
 
+.control-label{
+    font-weight: bold;
+    font-size: 1.25em;
+}
+
 .radio input {
-	visibility:hidden; 
+	visibility:hidden;
 	width:0;
 }
 
 .radio label:hover, .radio input:checked + label {
-	background: #d7ebf3; 
-	font-weight:bold;
+	background: #d7ebf3;
 }
 
+.btn-secondary.active, .btn-secondary:hover {
+    background-color: #d7ebf3
+}
 
 
 input[type='radio'] {
