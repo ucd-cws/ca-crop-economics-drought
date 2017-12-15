@@ -182,6 +182,7 @@ bottom: 0; padding: 10px">
                     <div class="row">
                         <div class="col-md-12 col-centered" style="text-align:center;">
                             <h3 id="tableheader"></h3>
+                            <h5 id="tableunits"></h5>
                         </div>
                     </div>
                     <div class="row">
@@ -263,11 +264,7 @@ bottom: 0; padding: 10px">
                 });
 
 
-
-
                 /////////////////////////////////////////////////////
-
-
 
                 //Width and height
                 var width = document.getElementById("map").offsetWidth;
@@ -350,6 +347,27 @@ bottom: 0; padding: 10px">
                             break;
                     }
 
+
+                    //
+                    //update selected_units
+                    var selected_units;
+                    switch (selected_property) {
+                        case "irrig":
+                            selected_units = "Thousand Acres";
+                            break;
+                        case "app":
+                            selected_units = "Thousand Acre-feet";
+                            break;
+                        case "grev":
+                            selected_units = "Millions of Dollars"
+                            break;
+                        case "jobs":
+                            selected_units = "Change in Jobs"
+                            break;
+                        default:
+                            selected_units = "Units"
+                    }
+
                     // remove any previous tables
                     $('#tbl').remove();
 
@@ -411,6 +429,7 @@ bottom: 0; padding: 10px">
 
                             // update the tableheader
                             $("#tableheader").text(full_name);
+                            $("#tableunits").text(selected_units);
 
                             // extract all feature properties for table
                             var regionValues = [];
@@ -640,24 +659,7 @@ bottom: 0; padding: 10px">
 
                                 } //update intervals
 
-                                //update selected_units
-                                var selected_units;
-                                switch (selected_property) {
-                                    case "irrig":
-                                        selected_units = "Thousand Acres";
-                                        break;
-                                    case "app":
-                                        selected_units = "Thousand Acre-feet";
-                                        break;
-                                    case "grev":
-                                        selected_units = "Millions of Dollars"
-                                        break;
-                                    case "jobs":
-                                        selected_units = "Change in Jobs"
-                                        break;
-                                    default:
-                                        selected_units = "Units"
-                                }
+
 
                                 document.getElementById("units").innerHTML = selected_units;
 
