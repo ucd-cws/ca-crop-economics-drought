@@ -83,3 +83,31 @@ input[type='radio'] {
     font-size: 16px;
     line-height: 20px;
 }
+
+table {
+  width: 100%;
+  margin: 20px auto;
+  table-layout: auto;
+}
+
+.fixed {
+  table-layout: fixed;
+}
+
+table,
+td,
+th {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  border: solid 1px;
+  text-align: center;
+}
+
+#table{
+    float: none;
+    margin: 0 auto;
+}

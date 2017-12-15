@@ -13,6 +13,21 @@ app = applied water (units acre-feet)
 grev = gross revenue (dollars)
 dirjobs = direct jobs (change in number of jobs)
 
+## Regional Employment
+
+regional employment results:
+
+Sacramento: Amador, Butte, Calaveras, Colusa, Contra Costa, El Dorado, Glenn, Placer, Sacramento, Shasta, Solano, Tehama, Sutter, Yolo, Yuba
+
+San Joaquin: Madera, Merced, Mariposa, San Joaquin, Stanislaus, Toulumne
+
+Tulare Lake Basin: Fresno, Kings, Kern, Tulare
+
+Central Coast: Monterrey, SLO, San Benito, Santa Clara
+South Inland: Imperial, Riverside
+
+South Coast: LA, San Diego, Santa Barbara, Ventura
+
 
 ## Dev
 
