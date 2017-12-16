@@ -19,7 +19,7 @@ regional employment results:
 
 Sacramento: Amador, Butte, Calaveras, Colusa, Contra Costa, El Dorado, Glenn, Placer, Sacramento, Shasta, Solano, Tehama, Sutter, Yolo, Yuba
 
-San Joaquin: Madera, Merced, Mariposa, San Joaquin, Stanislaus, Toulumne
+San Joaquin: Madera, Merced, Mariposa, San Joaquin, Stanislaus, Tuolumne
 
 Tulare Lake Basin: Fresno, Kings, Kern, Tulare
 

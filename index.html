@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="style.css">
 
-
+    <script src="sleep/Leaflet.Sleep.js"></script>
 
     <!-- font awesome -->
     <script src="https://use.fontawesome.com/cab4d722bb.js"></script>
@@ -42,6 +42,9 @@
         <!-- Main component for a primary marketing message or call to action -->
         <div class="jumbotron">
             <h2>California Drought Economics</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam mi risus, euismod a interdum ut, scelerisque in neque. Nulla facilisi. Pellentesque vulputate interdum quam, sed semper leo facilisis a. Morbi eget cursus nulla. Phasellus justo
+                magna, pharetra eu tellus at, pretium fringilla lectus. Curabitur faucibus, sem id tempus pulvinar, turpis felis bibendum velit, et porttitor quam nibh nec mi. In vitae egestas nulla, eu commodo risus. Nam finibus nisl ante, eget semper
+                magna ullamcorper id. Nunc eget iaculis diam. Nulla facilisi. In ut quam in sapien luctus laoreet et ut leo. Integer tristique vehicula dui quis euismod. Aliquam eu dapibus.</p>
             <!-- Control bar -->
             <div class="row control">
 
@@ -286,18 +289,25 @@ bottom: 0; padding: 10px">
                     document.getElementById("color_box" + [i]).style.backgroundColor = this["color" + [i]];
                 }
 
+                /////////////////////////////////////////////////////
                 //LEAFLET map
-                var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                });
+                var tiles = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
                 var map = new L.Map("map", {
                         center: [37.8, -120.0],
-                        zoom: 6
+                        zoom: 6,
+                        minZoom: 6,
+                        maxZoom: 10,
+                        maxBounds: [
+                            [30.4, -132.8], // southWest corner [32.4, -131.8]
+                            [44.8, -109.2] // northEast corner [42.8, -108.2]
+                        ],
+                        sleepNote: false, // doesn't show Leaflet.sleep wake message
+                        // opacity for the sleeping map
+                        sleepOpacity: .9
                     })
-                    .addLayer(OpenStreetMap_Mapnik);
+                    .addLayer(tiles);
 
-
-
+                // d3 setup
                 var svg = d3.select(map.getPanes().overlayPane).append("svg"),
                     g = svg.append("g").attr("class", "leaflet-zoom-hide");
                 var features = svg.append("g");
@@ -348,8 +358,7 @@ bottom: 0; padding: 10px">
                     }
 
 
-                    //
-                    //update selected_units
+                    //  unit names for the selected_property
                     var selected_units;
                     switch (selected_property) {
                         case "irrig":
@@ -400,8 +409,6 @@ bottom: 0; padding: 10px">
                     d3.json(analysis_unit + ".geojson", function(json) {
                         // TODO check if the property exists
                         if (property in json.features[0].properties) {
-
-
                             //stop loading spinner
                             spinner.stop();
 
@@ -453,7 +460,6 @@ bottom: 0; padding: 10px">
                                 });
                             }
 
-
                             // build the table
                             var tbl = $("<table/>").attr("id", "tbl");
                             $("#table").append(tbl);
@@ -461,9 +467,7 @@ bottom: 0; padding: 10px">
                             for (var i = 0; i < regionValues.length; i++) {
                                 var r = "<tr>" + "<td><b>" + regionValues[i]["region"] + "</b></td>" + "<td>" + regionValues[i]["ValueBase"] + "<td>" + regionValues[i]["Value2014"] + "</td>" + "<td>" + regionValues[i]["Value2015"] + "</td>" +
                                     "<td>" + regionValues[i]["Value2016"] + "</td>";
-
                                 $("#tbl").append(r);
-
                             }
 
                             var feature = g.selectAll("path")
@@ -675,7 +679,7 @@ bottom: 0; padding: 10px">
 
                 } //updateMap()
             </script>
-            <p>Center for Watershed Sciences - UC Davis</p>
+            <a href="https://watershed.ucdavis.edu/">Center for Watershed Sciences - UC Davis</a>
         </div>
 
 
