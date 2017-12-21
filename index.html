@@ -162,6 +162,10 @@ bottom: 0; padding: 10px">
                                 <div>
                                     <label id="units"></label>
                                 </div>
+                                <div style="padding: 5px">
+                                      <input type="checkbox" id="labelcheckbox" value="checked">
+                                      <label for="labelcheckbox">Labels</label>
+                                    </div>
                             </div>
                         </div>
                     </div>
@@ -266,6 +270,11 @@ bottom: 0; padding: 10px">
                     updateMap(selected_au, selected_var, selected_year)
                 });
 
+                // change labels on click
+                $("#labelcheckbox").click(function() {
+                    //$('#labelcheckbox').attr('checked')
+                    updateMap(selected_au, selected_var, selected_year)
+                });
 
                 /////////////////////////////////////////////////////
 
@@ -283,6 +292,8 @@ bottom: 0; padding: 10px">
 
                 var color = d3.scale.quantize();
 
+                var projection = d3.geo.projection;
+                console.log(projection);
 
                 //show legend colors
                 for (var i = 1; i <= num_colors; i++) {
@@ -332,6 +343,9 @@ bottom: 0; padding: 10px">
                     var point = map.latLngToLayerPoint(new L.LatLng(y, x));
                     this.stream.point(point.x, point.y);
                 }
+
+
+
 
                 //Load in GeoJSON data, set callback function
                 function updateMap(analysis_unit, selected_property, selected_year) {
@@ -421,6 +435,8 @@ bottom: 0; padding: 10px">
                                 }),
                                 path = d3.geo.path().projection(transform);
 
+
+
                             //rseponsive behavior
                             var event;
                             if ($("#map").width() > 500) {
@@ -489,6 +505,8 @@ bottom: 0; padding: 10px">
 
                             }
 
+
+
                             var feature = g.selectAll("path")
                                 .data(json.features)
                                 .enter().append("path")
@@ -533,6 +551,7 @@ bottom: 0; padding: 10px">
                                         };
                                     };
 
+
                                     var info = tmp_info;
 
 
@@ -569,6 +588,36 @@ bottom: 0; padding: 10px">
                                     //Hide the tooltip
                                     d3.select("#tooltip").classed("hidden", true);
                                 });
+
+                                // region name labels
+                                function updatelabels(){
+                                    if($('#labelcheckbox').prop('checked')) {
+                                        g.selectAll("text").remove();
+                                        g.selectAll("text")
+                                            .data(json.features)
+                                            .enter()
+                                            .append("svg:text")
+                                            .text(function(d){
+                                                return d.properties.Region;})
+                                            .attr("x", function(d){
+                                                return path.centroid(d)[0]; })
+                                            .attr("y", function(d){
+                                                return  path.centroid(d)[1]; })
+                                            .attr("text-anchor","middle").attr('font-size','8pt')
+                                    } else {
+                                        g.selectAll("text").remove();
+                                    }
+
+                                }
+
+                                // redraw the labels on map zoom end
+                                map.on('zoomend', function() {
+                                    updatelabels();
+                                    });
+
+                                // initial load of the labels when layer is updated
+                                updatelabels();
+
 
                             // not clear what reset does but it's crucial
                             map.on("viewreset", reset);
@@ -609,9 +658,6 @@ bottom: 0; padding: 10px">
                                 var min = Math.min.apply(Math, sort_ar); // turn strings into numbers and find min value in array
                                 var max = Math.max.apply(Math, sort_ar); // turn strings into numbers and find max value in array
 
-                                //console.log("sort length:"+sort_ar.length);
-                                //console.log("colors:"+num_colors);
-                                //console.log("break:"+Math.round(sort_ar.length/num_colors-1));
                                 // create equal interval breaks
                                 var range = max - min;
                                 var step = range / num_colors;
@@ -623,12 +669,6 @@ bottom: 0; padding: 10px">
                                     var uplim = min + step * i;
                                     cat_breaks.push(uplim);
                                 }
-
-                                /*
-                                for (var i = Math.round(sort_ar.length/num_colors-1); i < sort_ar.length; i+=Math.round(sort_ar.length/(num_colors-1))) {
-                                    cat_breaks.push(sort_ar[i]);
-                                }//find thresholds for each bucket
-                                */
 
                                 //console.log(cat_breaks);
                                 color = d3.scale.threshold()
@@ -687,6 +727,8 @@ bottom: 0; padding: 10px">
                                 document.getElementById("units").innerHTML = selected_units;
 
                             } //updateLegend()
+
+
 
                         } else {
                             console.log("Error: Analysis unit does not have data for that variable and/or year. User supplied Analysis Unit:" + analysis_unit + " Variable: " + selected_property + " Year: " + selected_year);
