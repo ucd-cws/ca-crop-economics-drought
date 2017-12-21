@@ -189,7 +189,7 @@ bottom: 0; padding: 10px">
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 col-centered" id="table">
+                        <div class="col-md-10 col-centered" id="table">
                         </div>
                     </div>
                 </div>
@@ -445,6 +445,7 @@ bottom: 0; padding: 10px">
                                 var currentFeature = json.features[i];
 
                                 var region = currentFeature.properties.Region;
+                                var definition = currentFeature.properties.definition;
                                 var ValueBase = Math.round(currentFeature.properties[selected_property + '_base'] * 100) / 100;
                                 var Value2014 = Math.round(currentFeature.properties[selected_property + '_2014'] * 100) / 100;
                                 var Value2015 = Math.round(currentFeature.properties[selected_property + '_2015'] * 100) / 100;
@@ -453,6 +454,7 @@ bottom: 0; padding: 10px">
 
                                 regionValues.push({
                                     region: region,
+                                    definition: definition,
                                     ValueBase: ValueBase,
                                     Value2014: Value2014,
                                     Value2015: Value2015,
@@ -460,14 +462,31 @@ bottom: 0; padding: 10px">
                                 });
                             }
 
+
+
                             // build the table
                             var tbl = $("<table/>").attr("id", "tbl");
                             $("#table").append(tbl);
-                            $("#tbl").append("<tr><th>Region</th><th>Base</th><th>2014</th><th>2015</th><th>2016</th></tr>")
-                            for (var i = 0; i < regionValues.length; i++) {
-                                var r = "<tr>" + "<td><b>" + regionValues[i]["region"] + "</b></td>" + "<td>" + regionValues[i]["ValueBase"] + "<td>" + regionValues[i]["Value2014"] + "</td>" + "<td>" + regionValues[i]["Value2015"] + "</td>" +
-                                    "<td>" + regionValues[i]["Value2016"] + "</td>";
-                                $("#tbl").append(r);
+
+                            if (analysis_unit == "CDFA_regions") {
+
+                                $("#tbl").append("<tr><th>Region</th><th>Districts</th><th>Base</th><th>2014</th><th>2015</th><th>2016</th></tr>")
+                                for (var i = 0; i < regionValues.length; i++) {
+                                    var r = "<tr>" + "<td><b>" + regionValues[i]["region"] + "</b></td>" +
+                                        "<td>" + regionValues[i]["definition"] + "</td>" + "<td>" + regionValues[i]["ValueBase"] + "<td>" + regionValues[i]["Value2014"] + "</td>" + "<td>" + regionValues[i]["Value2015"] + "</td>" +
+                                        "<td>" + regionValues[i]["Value2016"] + "</td>";
+                                    $("#tbl").append(r);
+                                }
+                            } else {
+
+                                $("#tbl").append("<tr><th>Region</th><th>2014</th><th>2015</th><th>2016</th></tr>")
+                                for (var i = 0; i < regionValues.length; i++) {
+                                    var r = "<tr>" + "<td><b>" + regionValues[i]["region"] + "</b></td>" +
+                                         "<td>" + regionValues[i]["Value2014"] + "</td>" + "<td>" + regionValues[i]["Value2015"] + "</td>" +
+                                        "<td>" + regionValues[i]["Value2016"] + "</td>";
+                                    $("#tbl").append(r);
+                                }
+
                             }
 
                             var feature = g.selectAll("path")
